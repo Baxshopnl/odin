@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Website;
 use App\CertificateScan;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -43,7 +44,7 @@ class CertificateWillExpire extends Notification
      */
     public function via($notifiable)
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', 'slack'];
     }
 
     /**
@@ -60,6 +61,13 @@ class CertificateWillExpire extends Notification
                 'website' => $this->website,
                 'scan' => $this->scan,
             ]);
+    }
+
+    public function toSlack($notifiable)
+    {
+        return (new SlackMessage)
+            ->from('Odin', ':scream:')
+            ->content('🔒 SSL expiring this week on: ' . $this->website->url);
     }
 
     /**
